@@ -41,11 +41,17 @@ const signup = async (req, res) => {
       expiresIn: '24h', // Token expires in 24 hours
     });
 
-    res.status(201).json({
-      message: 'User created successfully',
-      token,
-      user: { id: newUser.id, name: newUser.name, email: newUser.email },
-    });
+    const cookieOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax', // Consider 'strict' for more security or 'none' for cross-domain
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours, matches token expiration
+    };
+
+    res.status(201).cookie('token', token, cookieOptions).json({
+        message: 'User created successfully',
+        user: { id: newUser.id, name: newUser.name, email: newUser.email },
+      });
   } catch (error) {
     console.error('Signup Error:', error);
     res.status(500).json({ message: 'Server error during user registration.' });
@@ -72,7 +78,16 @@ const login = async (req, res) => {
 
     const token = sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '24h' });
 
-    res.status(200).json({ token, user: { id: user.id, name: user.name, email: user.email } });
+    const cookieOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    };
+
+    res.status(200).cookie('token', token, cookieOptions).json({
+      user: { id: user.id, name: user.name, email: user.email },
+    });
   } catch (error) {
     console.error('Login Error:', error);
     res.status(500).json({ message: 'Server error during login.' });

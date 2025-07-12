@@ -3,8 +3,12 @@ import cors from "cors";
 import authRouter from "./routes/authRoutes.js";
 
 const app = express();
+const corsOptions = {
+  origin: 'http://localhost:5173', 
+  credentials: true,
+};
 
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use("/api/auth", authRouter);
 
